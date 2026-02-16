@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Quill editor theme (toolbar icons, layout) */
+@import 'react-quill/dist/quill.snow.css';
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-background text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100;
+}
+
+::selection {
+  background: #ef009d20;
+}
+
+.container-max {
+  @apply mx-auto w-full max-w-7xl px-6;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-medium text-white shadow-soft transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 dark:shadow-none;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-xl bg-secondary px-5 py-3 text-sm font-medium text-white shadow-soft transition-colors hover:bg-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40 dark:shadow-none;
+}
+
+.card {
+  @apply rounded-2xl bg-white p-6 shadow-soft ring-1 ring-slate-900/5 dark:bg-slate-900 dark:ring-white/10 dark:shadow-none;
+}

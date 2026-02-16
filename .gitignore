@@ -1,0 +1,35 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+*.swp
+
+# Env files
+.env
+.env.*
+frontend/.env*
+backend/.env*
+
+# Node / Next.js (frontend)
+frontend/node_modules/
+frontend/.next/
+frontend/.turbo/
+frontend/.vercel/
+frontend/out/
+
+# Logs
+**/*.log
+backend/storage/logs/
+backend/storage/framework/cache/
+backend/storage/framework/sessions/
+backend/storage/framework/views/
+
+# PHP vendor (Laravel backend)
+backend/vendor/
+
+# Build caches
+backend/bootstrap/cache/*.php
+
+# Prisma sqlite journals (optional)
+frontend/prisma/*.db-journal
+frontend/prisma/*-journal

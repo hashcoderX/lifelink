@@ -1,0 +1,18 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class Contact extends Model
+{
+    protected $fillable = [
+        'user_id','phone','alt_phone','whatsapp','secondary_email','address_line1','address_line2','city','state','postal_code','country','organization_name','specialty','website','preferred_contact_method','emergency_contact_name','emergency_contact_phone'
+    ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+}
