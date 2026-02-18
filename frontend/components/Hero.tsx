@@ -1,7 +1,12 @@
 "use client";
 import Image from 'next/image';
+import { useSession } from 'next-auth/react';
 
 export default function Hero() {
+  const { data: session } = useSession();
+  const role = ((session?.user as any)?.role || '').toUpperCase();
+  const canAccessClinicalActions = role === 'DOCTOR' || role === 'HOSPITAL';
+
   return (
     <section
       className="relative overflow-hidden bg-gradient-to-br from-white to-teal-50 pb-24 pt-28 dark:from-slate-950 dark:to-teal-900/10"
@@ -61,6 +66,13 @@ export default function Hero() {
               >
                 Donate my blood
               </a>
+
+              {canAccessClinicalActions && (
+                <>
+                  <a href="/patients" className="btn">Patient Register</a>
+                  <a href="/kidney-matching" className="btn">Access Maching System</a>
+                </>
+              )}
             </div>
           </div>
           {/* <div className="relative">

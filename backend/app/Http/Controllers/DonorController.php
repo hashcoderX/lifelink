@@ -38,17 +38,17 @@ class DonorController extends Controller
             'age' => ['nullable','integer','min:0','max:120'],
             'bmi' => ['nullable','numeric','min:0','max:100'],
             'sex' => ['nullable', Rule::in(['MALE','FEMALE','OTHER'])],
-            'donor_type' => ['nullable', Rule::in(['BLOOD','KIDNEY'])],
-            'blood_group' => ['nullable', Rule::in(['A+','A-','B+','B-','AB+','AB-','O+','O-'])],
+            'donor_type' => ['nullable', Rule::in(['BLOOD','KIDNEY','EYE'])],
+            'blood_group' => ['nullable', Rule::in(['A','B','AB','O'])],
             'rh_factor' => ['nullable', Rule::in(['POSITIVE','NEGATIVE'])],
-            'hla_typing' => ['nullable','array'],
+            'hla_typing' => ['nullable'], // Accept as JSON string or array
             'crossmatch_result' => ['nullable', Rule::in(['POSITIVE','NEGATIVE','UNKNOWN'])],
             'dsa' => ['nullable', Rule::in(['POSITIVE','NEGATIVE'])],
-            'pra_score' => ['nullable','integer','min:0','max:100'],
+            'pra_score' => ['nullable','numeric','min:0','max:100'],
             'creatinine_level' => ['nullable','numeric','min:0'],
             'gfr' => ['nullable','numeric','min:0'],
             'urea_level' => ['nullable','numeric','min:0'],
-            'infectious_test_results' => ['nullable','array'],
+            'infectious_test_results' => ['nullable'], // Accept as JSON string or array
             'medical_history' => ['nullable','string'],
             'location' => ['nullable','string','max:255'],
             'availability' => ['boolean'],
@@ -60,6 +60,20 @@ class DonorController extends Controller
             'new_user_email' => ['nullable','email','max:255', Rule::unique('users','email')],
             'new_user_password' => ['nullable','string','min:8'],
         ]);
+
+        // Parse hla_typing and infectious_test_results if sent as JSON string
+        if (isset($data['hla_typing']) && is_string($data['hla_typing'])) {
+            $decoded = json_decode($data['hla_typing'], true);
+            if (is_array($decoded)) {
+                $data['hla_typing'] = $decoded;
+            }
+        }
+        if (isset($data['infectious_test_results']) && is_string($data['infectious_test_results'])) {
+            $decoded = json_decode($data['infectious_test_results'], true);
+            if (is_array($decoded)) {
+                $data['infectious_test_results'] = $decoded;
+            }
+        }
 
         // Create linked user if credentials provided
         $wantsNewUser = $request->filled('new_user_email') || $request->filled('new_user_password');
@@ -115,17 +129,17 @@ class DonorController extends Controller
             'age' => ['sometimes','integer','min:0','max:120'],
             'bmi' => ['sometimes','numeric','min:0','max:100'],
             'sex' => ['sometimes', Rule::in(['MALE','FEMALE','OTHER'])],
-            'donor_type' => ['sometimes', Rule::in(['BLOOD','KIDNEY'])],
-            'blood_group' => ['sometimes', Rule::in(['A+','A-','B+','B-','AB+','AB-','O+','O-'])],
+            'donor_type' => ['sometimes', Rule::in(['BLOOD','KIDNEY','EYE'])],
+            'blood_group' => ['sometimes', Rule::in(['A','B','AB','O'])],
             'rh_factor' => ['sometimes', Rule::in(['POSITIVE','NEGATIVE'])],
-            'hla_typing' => ['sometimes','array'],
+            'hla_typing' => ['sometimes'],
             'crossmatch_result' => ['sometimes', Rule::in(['POSITIVE','NEGATIVE','UNKNOWN'])],
             'dsa' => ['sometimes', Rule::in(['POSITIVE','NEGATIVE'])],
-            'pra_score' => ['sometimes','integer','min:0','max:100'],
+            'pra_score' => ['sometimes','numeric','min:0','max:100'],
             'creatinine_level' => ['sometimes','numeric','min:0'],
             'gfr' => ['sometimes','numeric','min:0'],
             'urea_level' => ['sometimes','numeric','min:0'],
-            'infectious_test_results' => ['sometimes','array'],
+            'infectious_test_results' => ['sometimes'],
             'medical_history' => ['sometimes','string'],
             'location' => ['sometimes','string','max:255'],
             'availability' => ['sometimes','boolean'],
@@ -134,6 +148,18 @@ class DonorController extends Controller
             'rejection_history' => ['sometimes','boolean'],
             'previous_transplant' => ['sometimes','boolean'],
         ]);
+        if (isset($data['hla_typing']) && is_string($data['hla_typing'])) {
+            $decoded = json_decode($data['hla_typing'], true);
+            if (is_array($decoded)) {
+                $data['hla_typing'] = $decoded;
+            }
+        }
+        if (isset($data['infectious_test_results']) && is_string($data['infectious_test_results'])) {
+            $decoded = json_decode($data['infectious_test_results'], true);
+            if (is_array($decoded)) {
+                $data['infectious_test_results'] = $decoded;
+            }
+        }
         $donor->update($data);
         return response()->json($donor);
     }

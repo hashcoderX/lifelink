@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\Donor;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ContactController extends Controller
 {
@@ -37,6 +39,7 @@ class ContactController extends Controller
             'state' => ['nullable','string','max:100'],
             'postal_code' => ['nullable','string','max:20'],
             'country' => ['nullable','string','max:100'],
+            'location' => ['nullable','string','max:255'],
             'organization_name' => ['nullable','string','max:255'],
             'specialty' => ['nullable','string','max:255'],
             'website' => ['nullable','url','max:255'],
@@ -45,8 +48,18 @@ class ContactController extends Controller
             'emergency_contact_phone' => ['nullable','string','max:32'],
         ]);
 
-        $contact = Contact::firstOrCreate(['user_id' => $user->id]);
-        $contact->fill($data)->save();
+        $contact = DB::transaction(function () use ($user, $data) {
+            $contact = Contact::firstOrCreate(['user_id' => $user->id]);
+            $contact->fill($data)->save();
+
+            if (array_key_exists('location', $data)) {
+                Donor::where('user_id', $user->id)->update([
+                    'location' => $data['location'],
+                ]);
+            }
+
+            return $contact;
+        });
 
         return response()->json(['contact' => $contact]);
     }

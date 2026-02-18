@@ -17,6 +17,10 @@ export default function PatientsListPage() {
   const [data, setData] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [perPage, setPerPage] = useState(10);
   // Registration form state
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
@@ -61,7 +65,7 @@ export default function PatientsListPage() {
       setLoading(true);
       setError('');
       try {
-        const res = await fetch(`${BACKEND_URL}/api/patients`, {
+        const res = await fetch(`${BACKEND_URL}/api/patients?page=${currentPage}&per_page=${perPage}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) {
@@ -70,6 +74,10 @@ export default function PatientsListPage() {
         }
         const json = await res.json();
         setData(json.data || []);
+        setCurrentPage(json.current_page || 1);
+        setLastPage(json.last_page || 1);
+        setTotal(json.total || 0);
+        setPerPage(json.per_page || 10);
       } catch (e: any) {
         setError(e.message);
       } finally {
@@ -77,11 +85,11 @@ export default function PatientsListPage() {
       }
     };
     run();
-  }, [token]);
+  }, [token, currentPage, perPage]);
 
   async function reloadList() {
     if (!token) return;
-    const res = await fetch(`${BACKEND_URL}/api/patients`, { headers: { Authorization: `Bearer ${token}` } });
+    const res = await fetch(`${BACKEND_URL}/api/patients?page=${currentPage}&per_page=${perPage}`, { headers: { Authorization: `Bearer ${token}` } });
     if (!res.ok) {
       const text = await res.text();
       setError(`Failed to refresh patients: ${res.status} ${res.statusText} ${text}`);
@@ -89,6 +97,10 @@ export default function PatientsListPage() {
     }
     const json = await res.json();
     setData(json.data || []);
+    setCurrentPage(json.current_page || 1);
+    setLastPage(json.last_page || 1);
+    setTotal(json.total || 0);
+    setPerPage(json.per_page || 10);
   }
 
   async function handleCreate(e: React.FormEvent) {
@@ -370,15 +382,24 @@ export default function PatientsListPage() {
       )}
       {loading && <p className="text-sm">Loading...</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
-      <ul className="divide-y divide-slate-200 dark:divide-slate-700 mt-4">
+      <div className="mt-4 grid gap-4">
         {data.map(p => (
-          <li key={p.id} className="py-3">
-            <p className="font-medium">{p.full_name}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{p.blood_group || '—'} | Urgency: {p.urgent_level || '—'} | {p.location || 'Unknown'}</p>
-          </li>
+          <div key={p.id} className="rounded-xl bg-white shadow border border-slate-200 p-4">
+            <div className="font-semibold text-lg text-slate-800">{p.full_name}</div>
+            <div className="text-xs text-slate-500 mt-1">Blood Group: <span className="font-bold">{p.blood_group || '—'}</span> | Urgency: <span className="font-bold">{p.urgent_level || '—'}</span> | Location: <span className="font-bold">{p.location || 'Unknown'}</span></div>
+          </div>
         ))}
-        {data.length === 0 && token && !loading && <li className="py-3 text-sm text-slate-500">No patients found.</li>}
-      </ul>
+        {data.length === 0 && token && !loading && <div className="py-3 text-sm text-slate-500">No patients found.</div>}
+      </div>
+      {lastPage > 1 && (
+        <div className="flex items-center justify-between mt-6">
+          <div className="text-xs text-slate-600">Page {currentPage} of {lastPage} · {total} patients</div>
+          <div className="flex gap-2">
+            <button className="btn btn-secondary px-3 py-1" disabled={currentPage <= 1} onClick={()=>setCurrentPage(p=>Math.max(1,p-1))}>Prev</button>
+            <button className="btn btn-secondary px-3 py-1" disabled={currentPage >= lastPage} onClick={()=>setCurrentPage(p=>Math.min(lastPage,p+1))}>Next</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

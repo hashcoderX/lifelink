@@ -12,7 +12,7 @@ export default function DonorRegisterForm({ presetType }: { presetType?: 'BLOOD'
   const [location, setLocation] = useState('');
   const [country, setCountry] = useState('');
   const [bloodGroup, setBloodGroup] = useState('');
-  const [rh, setRh] = useState('');
+  const [rhFactor, setRhFactor] = useState('');
   const [frontFile, setFrontFile] = useState<File | null>(null);
   const [backFile, setBackFile] = useState<File | null>(null);
   const [donorType, setDonorType] = useState<'BLOOD' | 'KIDNEY' | 'EYE'>(presetType || 'BLOOD');
@@ -130,7 +130,7 @@ export default function DonorRegisterForm({ presetType }: { presetType?: 'BLOOD'
       if (location) form.append('location', location);
       if (country) form.append('country', country);
       if (bloodGroup) form.append('blood_group', bloodGroup);
-      if (rh) form.append('rh', rh);
+      if (rhFactor) form.append('rh_factor', rhFactor);
       if (frontFile) form.append('front', frontFile);
       if (backFile) form.append('back', backFile);
       // Additional fields
@@ -138,7 +138,11 @@ export default function DonorRegisterForm({ presetType }: { presetType?: 'BLOOD'
       if (bmi) form.append('bmi', bmi);
       if (donorType === 'KIDNEY') {
         if (sex) form.append('sex', sex);
-        if (hlaTyping) form.append('hla_typing', hlaTyping);
+        if (hlaTyping) {
+          // Accept comma or space separated, store as array
+          const hlaArr = hlaTyping.split(/[,\s]+/).filter(Boolean);
+          form.append('hla_typing', JSON.stringify(hlaArr));
+        }
         if (crossmatchResult) form.append('crossmatch_result', crossmatchResult);
         if (praScore) form.append('pra_score', praScore);
         if (creatinine) form.append('creatinine_level', creatinine);
@@ -288,11 +292,11 @@ export default function DonorRegisterForm({ presetType }: { presetType?: 'BLOOD'
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1" htmlFor="rh">Rh Factor (optional)</label>
-                <select id="rh" value={rh} onChange={e=>setRh(e.target.value)} className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-slate-800">
+                <label className="block text-sm font-medium mb-1" htmlFor="rh_factor">Rh Factor (optional)</label>
+                <select id="rh_factor" value={rhFactor} onChange={e=>setRhFactor(e.target.value)} className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-slate-800">
                   <option value="">Select Rh</option>
-                  <option value="+">Positive (+)</option>
-                  <option value="-">Negative (-)</option>
+                  <option value="POSITIVE">Positive (+)</option>
+                  <option value="NEGATIVE">Negative (-)</option>
                 </select>
               </div>
               
@@ -403,8 +407,9 @@ export default function DonorRegisterForm({ presetType }: { presetType?: 'BLOOD'
                   <label className="block text-sm font-medium mb-1" htmlFor="sex">Sex</label>
                   <select id="sex" required value={sex} onChange={e=>setSex(e.target.value)} className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-slate-800">
                     <option value="">Select</option>
-                    <option value="M">Male</option>
-                    <option value="F">Female</option>
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                    <option value="OTHER">Other</option>
                   </select>
                 </div>
                 <div>
@@ -413,7 +418,12 @@ export default function DonorRegisterForm({ presetType }: { presetType?: 'BLOOD'
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1" htmlFor="crossmatch">Crossmatch Result (optional)</label>
-                  <input id="crossmatch" type="text" value={crossmatchResult} onChange={e=>setCrossmatchResult(e.target.value)} className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-slate-800" />
+                  <select id="crossmatch" value={crossmatchResult} onChange={e=>setCrossmatchResult(e.target.value)} className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-slate-800">
+                    <option value="">Select</option>
+                    <option value="POSITIVE">Positive</option>
+                    <option value="NEGATIVE">Negative</option>
+                    <option value="UNKNOWN">Unknown</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1" htmlFor="pra">PRA Score (optional)</label>
@@ -433,7 +443,11 @@ export default function DonorRegisterForm({ presetType }: { presetType?: 'BLOOD'
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1" htmlFor="dsa">DSA (optional)</label>
-                  <input id="dsa" type="text" value={dsa} onChange={e=>setDsa(e.target.value)} className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-slate-800" />
+                  <select id="dsa" value={dsa} onChange={e=>setDsa(e.target.value)} className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm dark:border-white/10 dark:bg-slate-800">
+                    <option value="">Select</option>
+                    <option value="POSITIVE">Positive</option>
+                    <option value="NEGATIVE">Negative</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1" htmlFor="hiv">HIV Status (optional)</label>

@@ -1,4 +1,5 @@
-export const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+const RAW_BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+export const BACKEND_URL = RAW_BACKEND_URL.replace(/\/+$/, '');
 
 export type Sex = 'MALE' | 'FEMALE' | 'OTHER';
 export type BloodGroup = 'A+'|'A-'|'B+'|'B-'|'AB+'|'AB-'|'O+'|'O-';
@@ -75,6 +76,7 @@ export type ContactPayload = {
   state?: string | null;
   postal_code?: string | null;
   country?: string | null;
+  location?: string | null;
   organization_name?: string | null;
   specialty?: string | null;
   website?: string | null;
@@ -87,7 +89,9 @@ async function apiFetch<T>(path: string, options: RequestInit = {}, token?: stri
   const res = await fetch(`${BACKEND_URL}${path}`, {
     ...options,
     headers: {
+      'Accept': 'application/json',
       'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
       ...(options.headers || {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
@@ -194,6 +198,8 @@ export async function uploadMyMedicalReport(token: string, report_type: string, 
   const res = await fetch(`${BACKEND_URL}/api/medical-reports/me/upload`, {
     method: 'POST',
     headers: {
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: form,
@@ -214,6 +220,8 @@ export async function uploadMyDonorMedicalReport(token: string, report_type: str
   const res = await fetch(`${BACKEND_URL}/api/medical-reports/me-donor/upload`, {
     method: 'POST',
     headers: {
+      'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: form,

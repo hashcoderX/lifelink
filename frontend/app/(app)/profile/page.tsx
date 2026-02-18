@@ -76,6 +76,9 @@ export default function ProfilePage() {
 
   const appUser = session?.user as any;
   const roleEffective = (backendUser?.role || appUser?.role || 'GUEST') as string;
+  const isDonorRole = ['DONOR', 'DONER'].includes((roleEffective || '').toUpperCase());
+  const isDonerRole = (roleEffective || '').toUpperCase() === 'DONER';
+  const isDoctorRole = (roleEffective || '').toUpperCase() === 'DOCTOR';
 
   useEffect(() => {
     let cancelled = false;
@@ -108,7 +111,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     let cancelled = false;
-    if (token && roleEffective === 'DONOR') {
+    if (token && isDonorRole) {
       setDonorLoading(true);
       getMyDonor(token)
         .then(r => { if (!cancelled) { setDonor(r.donor); setDonorDraft(r.donor || { full_name: backendUser?.name || '' }); setDonorHlaInput(r.donor?.hla_typing?.join(', ') || ''); }})
@@ -116,11 +119,11 @@ export default function ProfilePage() {
         .finally(() => { if (!cancelled) setDonorLoading(false); });
     }
     return () => { cancelled = true; };
-  }, [token, roleEffective, backendUser]);
+  }, [token, isDonorRole, backendUser]);
 
   useEffect(() => {
     let cancelled = false;
-    if (token && backendUser?.donor && roleEffective === 'DONOR') {
+    if (token && backendUser?.donor && isDonorRole) {
       setDonorReportsLoading(true);
       getMyDonorMedicalReports(token)
         .then(r => { if (!cancelled) setDonorReports(r.reports); })
@@ -128,7 +131,7 @@ export default function ProfilePage() {
         .finally(() => { if (!cancelled) setDonorReportsLoading(false); });
     }
     return () => { cancelled = true; };
-  }, [token, backendUser, roleEffective]);
+  }, [token, backendUser, isDonorRole]);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -233,6 +236,17 @@ export default function ProfilePage() {
                 <li><span className="font-semibold">Email:</span> {(session.user as any)?.email}</li>
                 <li><span className="font-semibold">Role:</span> {roleEffective}</li>
               </ul>
+              {isDonerRole && (
+                <div className="mt-4">
+                  <Link href="/donate-blood" className="btn">Donate My Ogans</Link>
+                </div>
+              )}
+              {isDoctorRole && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Link href="/patients" className="btn">Register Patient</Link>
+                  <Link href="/kidney-matching" className="btn">Access Maching System</Link>
+                </div>
+              )}
             </section>
 
 
@@ -257,6 +271,17 @@ export default function ProfilePage() {
                       {COUNTRY_OPTIONS.map(c => (<option key={c} value={c}>{c}</option>))}
                     </select>
                   </div>
+                  {isDonorRole && (
+                    <div>
+                      <label className="block text-xs font-medium mb-1">Location</label>
+                      <input
+                        value={contactDraft.location || ''}
+                        onChange={e=>updateContactDraft('location', e.target.value)}
+                        className="w-full rounded border px-3 py-2 text-sm"
+                        placeholder="City / Area"
+                      />
+                    </div>
+                  )}
                   <button className="btn" type="submit">Save Contact</button>
                 </form>
               )}
@@ -271,7 +296,7 @@ export default function ProfilePage() {
               </section>
             )}
 
-            {roleEffective === 'DONOR' && (
+            {isDonorRole && (
               <section className="card">
                 <h2 className="text-lg font-medium mb-4">Donor Medical Reports</h2>
                 <form onSubmit={handleDonorMedicalReportUpload} className="space-y-3">
