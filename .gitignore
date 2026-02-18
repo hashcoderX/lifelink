@@ -4,17 +4,26 @@ Thumbs.db
 .vscode/
 *.swp
 
-# Env files
+# Env files (keep examples)
 .env
-.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+!.env.*.example
 frontend/.env*
 backend/.env*
 
-# Node / Next.js (frontend)
-frontend/node_modules/
-frontend/.next/
-frontend/.turbo/
-frontend/.vercel/
+# Node / JS (global)
+**/node_modules/
+**/dist/
+**/coverage/
+
+# Next.js (global)
+**/.next/
+**/.turbo/
+**/.vercel/
 frontend/out/
 
 # Logs
@@ -26,6 +35,12 @@ backend/storage/framework/views/
 
 # PHP vendor (Laravel backend)
 backend/vendor/
+
+# Laravel storage (uploads)
+backend/storage/app/public/*
+!backend/storage/app/public/.gitkeep
+backend/storage/app/private/*
+!backend/storage/app/private/.gitkeep
 
 # Build caches
 backend/bootstrap/cache/*.php
