@@ -42,6 +42,9 @@ backend/storage/app/public/*
 backend/storage/app/private/*
 !backend/storage/app/private/.gitkeep
 
+# Service account keys / secrets
+backend/storage/app/*.json
+
 # Build caches
 backend/bootstrap/cache/*.php
 

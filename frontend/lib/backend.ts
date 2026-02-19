@@ -112,7 +112,7 @@ export async function backendLogin(email: string, password: string) {
 }
 
 export async function backendRegister(name: string, email: string, password: string, role?: string) {
-  return apiFetch<{ user: any; token: string }>(`/api/auth/register`, {
+  return apiFetch<{ user: any; token: string }>(`/api/register`, {
     method: 'POST',
     body: JSON.stringify({ name, email, password, role }),
   });

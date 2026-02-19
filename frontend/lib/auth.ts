@@ -5,7 +5,8 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 
 // We are phasing out the Prisma adapter credential flow in favor of delegating authentication to Laravel.
 // Social providers can remain (optional) for future linking.
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+// Use internal URL for server-side calls (NextAuth authorize)
+const BACKEND_URL = process.env.BACKEND_INTERNAL_URL || 'http://localhost:8000';
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt' },

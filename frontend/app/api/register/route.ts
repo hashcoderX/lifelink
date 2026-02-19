@@ -1,38 +1,55 @@
-import { prisma } from '@/lib/prisma';
-import { hash } from 'bcryptjs';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 
-export async function POST(req: Request) {
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+const INTERNAL_BACKEND = process.env.BACKEND_INTERNAL_URL || 'http://localhost:8000';
+
+export async function POST(request: NextRequest) {
   try {
-    const body = await req.json();
-    const { name, email, password, role } = body as { name?: string; email?: string; password?: string; role?: string };
-    if (!email || !password) {
-      return NextResponse.json({ error: 'Email and password required' }, { status: 400 });
+    const body = await request.json();
+    const { name, email, password, role } = body;
+
+    if (!name || !email || !password || !role) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) {
-      return NextResponse.json({ error: 'Email already in use' }, { status: 409 });
-    }
+    const backendUrl = `${INTERNAL_BACKEND}/api/auth/register`;
 
-    const hashed = await hash(password, 10);
-    const allowedRoles = ['DOCTOR', 'HOSPITAL', 'PATIENT', 'DONOR', 'FUND_RAISER'];
-    const normalizedRole = typeof role === 'string'
-      ? role.toUpperCase().replace(/[-\s]+/g, '_')
-      : undefined;
-
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name: name ?? null,
-        hashedPassword: hashed,
-        role: normalizedRole && allowedRoles.includes(normalizedRole) ? normalizedRole : 'GUEST',
+    const response = await fetch(backendUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
+      body: JSON.stringify({ name, email, password, role }),
     });
 
-    return NextResponse.json({ id: user.id, email: user.email }, { status: 201 });
-  } catch (e) {
-    console.error(e);
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+    const data = await response.json();
+
+    if (!response.ok) {
+      try {
+        const logDir = path.join(process.cwd(), 'logs');
+        if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+        fs.appendFileSync(
+          path.join(logDir, 'register.log'),
+          `[${new Date().toISOString()}] Upstream error ${response.status}: ${JSON.stringify(data)}\n`
+        );
+      } catch {}
+      return NextResponse.json(data, { status: response.status });
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    try {
+      const logDir = path.join(process.cwd(), 'logs');
+      if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+      fs.appendFileSync(
+        path.join(logDir, 'register.log'),
+        `[${new Date().toISOString()}] Handler error: ${String(error)}\n`
+      );
+    } catch {}
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
